@@ -62,6 +62,10 @@ func main() {
 		&checks.BrokenLinkContext{},
 		&checks.ZombieTransaction{},
 		&checks.ExitInLibrary{},
+		&checks.MemoryDOSGuard{},
+		&checks.SilencedErrors{},
+		&checks.SliceAppendRace{},
+		&checks.WeakRandomness{},
 		// Add more checks here
 	}
 

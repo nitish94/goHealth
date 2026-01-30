@@ -26,7 +26,13 @@
 
 #### 3. Security
 *   **SQL Injection**: Detects `fmt.Sprintf` or string concatenation used to build SQL queries.
+*   **Weak Randomness**: Detects `math/rand` usage for token/password generation (predictable RNG).
 *   **Exit in Libraries**: Detects `os.Exit`, `log.Fatal`, or `panic` calls in non-main packages (prevents graceful error handling).
+
+#### 4. Performance & Reliability
+*   **Memory DOS Protection**: Detects `io.ReadAll` without `io.LimitReader` (prevents OOM from large payloads).
+*   **Silenced Critical Errors**: Detects ignoring errors from `json.Marshal`, `db.Exec`, etc. (hides failures).
+*   **Slice Append Races**: Detects appending to slices in goroutines without synchronization (data races).
 
 ## 📦 Installation & Usage
 
