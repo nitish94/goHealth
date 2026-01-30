@@ -75,9 +75,10 @@ func (c *ZombieTransaction) Run(pkg *packages.Package) []doctor.Diagnosis {
 
 				if !rollbackDeferred {
 					diagnoses = append(diagnoses, doctor.Diagnosis{
-						Severity:    doctor.SeverityCritical,
-						Message:     "This transaction won't auto-rollback on error. You risk locking your database tables.",
-						WhyItMatters: "Database transactions hold locks and connections until committed or rolled back. If your code panics or returns early without deferring Rollback(), the transaction remains open, blocking other operations and potentially locking tables. Always defer tx.Rollback() immediately after starting a transaction, even if you plan to commit later.",
+						Severity:     doctor.SeverityCritical,
+						Message:      "This transaction won't auto-rollback on error. You risk locking your database tables.",
+						WhyItMatters: "Database transactions hold locks and connections until committed or rolled back. If your code panics or returns early without deferring Rollback(), the transaction remains open, blocking other operations and potentially locking tables.",
+						Suggestion:   "Always defer tx.Rollback() immediately after starting a transaction, even if you plan to commit later.",
 						File:         pkg.Fset.Position(assign.Pos()).Filename,
 						Line:         pkg.Fset.Position(assign.Pos()).Line,
 						CodeSnippet: txVarName + ", err := db.BeginTx(...) // Missing defer " + txVarName + ".Rollback()",

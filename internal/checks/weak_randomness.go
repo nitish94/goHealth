@@ -30,7 +30,8 @@ func (c *WeakRandomness) Run(pkg *packages.Package) []doctor.Diagnosis {
 				diagnoses = append(diagnoses, doctor.Diagnosis{
 					Severity:    doctor.SeverityCritical,
 					Message:     "You are generating security tokens with a predictable RNG. Attackers can guess your session tokens.",
-					WhyItMatters: "math/rand uses a deterministic algorithm seeded typically with time.Now().UnixNano(), making it predictable for attackers who can guess the seed range. This compromises security tokens, passwords, and session IDs. Suggestion: Use crypto/rand for secure random bytes (e.g., token := make([]byte, 32); crypto/rand.Read(token)), or higher-level packages like github.com/google/uuid for generating unique identifiers.",
+					WhyItMatters: "math/rand uses a deterministic algorithm seeded typically with time.Now().UnixNano(), making it predictable for attackers who can guess the seed range. This compromises security tokens, passwords, and session IDs.",
+					Suggestion:   "Use crypto/rand for secure random bytes (e.g., token := make([]byte, 32); crypto/rand.Read(token)), or higher-level packages like github.com/google/uuid for generating unique identifiers.",
 					File:         pos.Filename,
 					Line:         pos.Line,
 					CodeSnippet: "math/rand.Int() // Predictable!",

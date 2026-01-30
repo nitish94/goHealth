@@ -1,0 +1,207 @@
+<html>
+<head>
+<title>Go Health Report</title>
+</head>
+<body>
+<h1>Go Health Inspector Report</h1>
+<p>Found 29 issues.</p>
+<h2>CRITICAL: You dropped the context chain. If the request cancels, this work will keep running, wasting resources.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/broken_link_context.go:10</p>
+<p><strong>Code:</strong> someFunc(context.Background()) // Should be someFunc(ctx)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Using context.TODO() or context.Background() breaks request cancellation and tracing. If the parent context cancels (e.g., user disconnects), this operation ignores it, leading to zombie work that burns CPU/memory until completion. Always pass the inherited context to maintain cancellation and observability.</p>
+<p></p>
+<h2>CRITICAL: You silenced a critical error. Your user thinks it worked, but your database failed.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/silenced_errors.go:20</p>
+<p><strong>Code:</strong> _, err := json.Marshal(...) // Error ignored!</p>
+<p><strong>Why this matters:</strong></p>
+<p>Ignoring errors from critical operations like JSON marshaling, database writes, or HTTP responses can lead to silent failures. Users may believe operations succeeded when they actually failed (e.g., corrupt data saved to DB, empty responses sent). Always check and handle errors appropriately.</p>
+<p></p>
+<h2>CRITICAL: Possible unclosed HTTP response body detected.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/ugly.go:16</p>
+<p><strong>Code:</strong> resp, err := ... // Missing defer resp.Body.Close()</p>
+<p><strong>Why this matters:</strong></p>
+<p>Response bodies must be closed to avoid leaking file descriptors.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use `defer resp.Body.Close()` immediately after checking for errors.</p>
+<p></p>
+<h2>CRITICAL: Possible unclosed HTTP response body detected.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/unclosed_body.go:8</p>
+<p><strong>Code:</strong> resp, err := ... // Missing defer resp.Body.Close()</p>
+<p><strong>Why this matters:</strong></p>
+<p>Response bodies must be closed to avoid leaking file descriptors.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use `defer resp.Body.Close()` immediately after checking for errors.</p>
+<p></p>
+<h2>CRITICAL: Potential SQL Injection risk detected (String Concatenation).</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/sql_bad.go:14</p>
+<p><strong>Code:</strong> db.Query(... + ...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Concatenating strings to build SQL queries is unsafe because user input can contain SQL syntax that changes the query's meaning.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Replace concatenation with prepared statements, e.g., stmt, err := db.Prepare('SELECT * FROM users WHERE name = ?'); rows, err := stmt.Query(name).</p>
+<p></p>
+<h2>CRITICAL: Potential SQL Injection risk detected (String Concatenation).</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/ugly.go:19</p>
+<p><strong>Code:</strong> db.Query(... + ...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Concatenating strings to build SQL queries is unsafe because user input can contain SQL syntax that changes the query's meaning.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Replace concatenation with prepared statements, e.g., stmt, err := db.Prepare('SELECT * FROM users WHERE name = ?'); rows, err := stmt.Query(name).</p>
+<p></p>
+<h2>CRITICAL: Possible unclosed database rows detected.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/rows_bad.go:8</p>
+<p><strong>Code:</strong> rows, err := db.Query(...) // Missing defer Close()</p>
+<p><strong>Why this matters:</strong></p>
+<p>`sql.Rows` holds a database connection until you call `Close()`. Failing to close it will quickly exhaust your connection pool.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use `defer rows.Close()` immediately after checking for errors.</p>
+<p></p>
+<h2>CRITICAL: Possible unclosed database rows detected.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/ugly.go:19</p>
+<p><strong>Code:</strong> rows, err := db.Query(...) // Missing defer Close()</p>
+<p><strong>Why this matters:</strong></p>
+<p>`sql.Rows` holds a database connection until you call `Close()`. Failing to close it will quickly exhaust your connection pool.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use `defer rows.Close()` immediately after checking for errors.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/timebomb_http_client.go:10</p>
+<p><strong>Code:</strong> http.Get(...) or http.Post(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>The default Go HTTP client has no timeout. If a third-party service hangs, your application will hang, exhaust file descriptors, and crash. Always set a timeout on HTTP clients.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/timebomb_http_client.go:19</p>
+<p><strong>Code:</strong> http.Get(...) or http.Post(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>The default Go HTTP client has no timeout. If a third-party service hangs, your application will hang, exhaust file descriptors, and crash. Always set a timeout on HTTP clients.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/timebomb_http_client.go:28</p>
+<p><strong>Code:</strong> &http.Client{...} without Timeout</p>
+<p><strong>Why this matters:</strong></p>
+<p>HTTP clients without a timeout can cause your application to hang indefinitely on slow or unresponsive servers, leading to resource exhaustion and crashes. Set a reasonable timeout.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/timebomb_http_client.go:34</p>
+<p><strong>Code:</strong> &http.Client{...} without Timeout</p>
+<p><strong>Why this matters:</strong></p>
+<p>HTTP clients without a timeout can cause your application to hang indefinitely on slow or unresponsive servers, leading to resource exhaustion and crashes. Set a reasonable timeout.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/ugly.go:16</p>
+<p><strong>Code:</strong> http.Get(...) or http.Post(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>The default Go HTTP client has no timeout. If a third-party service hangs, your application will hang, exhaust file descriptors, and crash. Always set a timeout on HTTP clients.</p>
+<p></p>
+<h2>CRITICAL: You are using a client that waits forever. One slow API call will crash your platform.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/unclosed_body.go:8</p>
+<p><strong>Code:</strong> http.Get(...) or http.Post(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>The default Go HTTP client has no timeout. If a third-party service hangs, your application will hang, exhaust file descriptors, and crash. Always set a timeout on HTTP clients.</p>
+<p></p>
+<h2>CRITICAL: This library package has a kill switch. Only main should decide when to die.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/lib/library.go:20</p>
+<p><strong>Code:</strong> os.Exit(...) or log.Fatal(...) or panic(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Library packages should never call os.Exit, log.Fatal, or panic. These terminate the entire process and prevent the caller from handling errors gracefully. Libraries must return errors instead, allowing the main package (or caller) to decide how to respond - whether to log, retry, or exit.</p>
+<p></p>
+<h2>CRITICAL: This transaction won't auto-rollback on error. You risk locking your database tables.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/zombie_transaction.go:10</p>
+<p><strong>Code:</strong> tx, err := db.BeginTx(...) // Missing defer tx.Rollback()</p>
+<p><strong>Why this matters:</strong></p>
+<p>Database transactions hold locks and connections until committed or rolled back. If your code panics or returns early without deferring Rollback(), the transaction remains open, blocking other operations and potentially locking tables.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Always defer tx.Rollback() immediately after starting a transaction, even if you plan to commit later.</p>
+<p></p>
+<h2>CRITICAL: Blocking `time.Sleep` call detected inside a loop.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/broken.go:12</p>
+<p><strong>Code:</strong> time.Sleep(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Sleeping inside a loop blocks the entire goroutine. If this loop processes requests or events, it will freeze. Use a `time.Ticker` with a `select` statement to allow for cancellation/context awareness.</p>
+<p></p>
+<h2>CRITICAL: This transaction won't auto-rollback on error. You risk locking your database tables.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/zombie_transaction.go:43</p>
+<p><strong>Code:</strong> tx, err := db.BeginTx(...) // Missing defer tx.Rollback()</p>
+<p><strong>Why this matters:</strong></p>
+<p>Database transactions hold locks and connections until committed or rolled back. If your code panics or returns early without deferring Rollback(), the transaction remains open, blocking other operations and potentially locking tables.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Always defer tx.Rollback() immediately after starting a transaction, even if you plan to commit later.</p>
+<p></p>
+<h2>CRITICAL: You are reading unlimited data into memory. One huge request will OOM your server.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/memory_dos.go:10</p>
+<p><strong>Code:</strong> io.ReadAll(r.Body) // No limit!</p>
+<p><strong>Why this matters:</strong></p>
+<p>io.ReadAll reads the entire input into memory without limits. An attacker can send a massive payload (e.g., 10GB JSON) that exhausts RAM and crashes your server. Always wrap readers in io.LimitReader to cap memory usage, or stream/process data incrementally.</p>
+<p></p>
+<h2>CRITICAL: You dropped the context chain. If the request cancels, this work will keep running, wasting resources.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/broken_link_context.go:15</p>
+<p><strong>Code:</strong> someFunc(context.Background()) // Should be someFunc(ctx)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Using context.TODO() or context.Background() breaks request cancellation and tracing. If the parent context cancels (e.g., user disconnects), this operation ignores it, leading to zombie work that burns CPU/memory until completion. Always pass the inherited context to maintain cancellation and observability.</p>
+<p></p>
+<h2>CRITICAL: You're appending to a slice in a goroutine without synchronization. This causes data races and random panics.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/slice_race.go:8</p>
+<p><strong>Code:</strong> go func() { slice = append(slice, item) } // Race condition!</p>
+<p><strong>Why this matters:</strong></p>
+<p>Slices are not thread-safe. Concurrent appends from multiple goroutines can corrupt the slice's internal state, leading to random panics, data corruption, or crashes that are extremely hard to debug. Use a mutex to protect shared slices or consider thread-safe alternatives like channels.</p>
+<p></p>
+<h2>CRITICAL: You're appending to a slice in a goroutine without synchronization. This causes data races and random panics.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/slice_race.go:18</p>
+<p><strong>Code:</strong> go func() { slice = append(slice, item) } // Race condition!</p>
+<p><strong>Why this matters:</strong></p>
+<p>Slices are not thread-safe. Concurrent appends from multiple goroutines can corrupt the slice's internal state, leading to random panics, data corruption, or crashes that are extremely hard to debug. Use a mutex to protect shared slices or consider thread-safe alternatives like channels.</p>
+<p></p>
+<h2>CRITICAL: You are generating security tokens with a predictable RNG. Attackers can guess your session tokens.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/weak_randomness.go:9</p>
+<p><strong>Code:</strong> math/rand.Int() // Predictable!</p>
+<p><strong>Why this matters:</strong></p>
+<p>math/rand uses a deterministic algorithm seeded typically with time.Now().UnixNano(), making it predictable for attackers who can guess the seed range. This compromises security tokens, passwords, and session IDs.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use crypto/rand for secure random bytes (e.g., token := make([]byte, 32); crypto/rand.Read(token)), or higher-level packages like github.com/google/uuid for generating unique identifiers.</p>
+<p></p>
+<h2>CRITICAL: You are generating security tokens with a predictable RNG. Attackers can guess your session tokens.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/weak_randomness.go:14</p>
+<p><strong>Code:</strong> math/rand.Int() // Predictable!</p>
+<p><strong>Why this matters:</strong></p>
+<p>math/rand uses a deterministic algorithm seeded typically with time.Now().UnixNano(), making it predictable for attackers who can guess the seed range. This compromises security tokens, passwords, and session IDs.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use crypto/rand for secure random bytes (e.g., token := make([]byte, 32); crypto/rand.Read(token)), or higher-level packages like github.com/google/uuid for generating unique identifiers.</p>
+<p></p>
+<h2>CRITICAL: You are generating security tokens with a predictable RNG. Attackers can guess your session tokens.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/weak_randomness.go:20</p>
+<p><strong>Code:</strong> math/rand.Int() // Predictable!</p>
+<p><strong>Why this matters:</strong></p>
+<p>math/rand uses a deterministic algorithm seeded typically with time.Now().UnixNano(), making it predictable for attackers who can guess the seed range. This compromises security tokens, passwords, and session IDs.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Use crypto/rand for secure random bytes (e.g., token := make([]byte, 32); crypto/rand.Read(token)), or higher-level packages like github.com/google/uuid for generating unique identifiers.</p>
+<p></p>
+<h2>CRITICAL: This loop spins 100% CPU waiting for nothing.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/empty_spin.go:7</p>
+<p><strong>Code:</strong> for { select { default: } } // CPU burner!</p>
+<p><strong>Why this matters:</strong></p>
+<p>A for loop with only a non-blocking select (default case) creates a busy-wait that consumes 100% CPU while waiting for channels. This wastes resources and can starve other goroutines.</p>
+<p><strong>Suggestion:</strong></p>
+<p>Add a blocking case to the select (e.g., a channel receive or time.After timeout), or use time.Sleep for polling, or consider using sync.Cond for more efficient waiting.</p>
+<p></p>
+<h2>CRITICAL: This library package has a kill switch. Only main should decide when to die.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/lib/library.go:10</p>
+<p><strong>Code:</strong> os.Exit(...) or log.Fatal(...) or panic(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Library packages should never call os.Exit, log.Fatal, or panic. These terminate the entire process and prevent the caller from handling errors gracefully. Libraries must return errors instead, allowing the main package (or caller) to decide how to respond - whether to log, retry, or exit.</p>
+<p></p>
+<h2>CRITICAL: This library package has a kill switch. Only main should decide when to die.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/lib/library.go:15</p>
+<p><strong>Code:</strong> os.Exit(...) or log.Fatal(...) or panic(...)</p>
+<p><strong>Why this matters:</strong></p>
+<p>Library packages should never call os.Exit, log.Fatal, or panic. These terminate the entire process and prevent the caller from handling errors gracefully. Libraries must return errors instead, allowing the main package (or caller) to decide how to respond - whether to log, retry, or exit.</p>
+<p></p>
+<h2>WARNING: Do not store `context.Context` in a struct type.</h2>
+<p><strong>Location:</strong> /testbed/goHealth/demo/context_bad.go:8</p>
+<p><strong>Code:</strong> type Service struct { ... ctx context.Context ... }</p>
+<p><strong>Why this matters:</strong></p>
+<p>`context.Context` is request-scoped and should be passed as the first argument to functions, not stored in a struct whose lifecycle might exceed the request. Storing it can lead to memory leaks or retaining a cancelled context.</p>
+<p></p>
+</body>
+</html>

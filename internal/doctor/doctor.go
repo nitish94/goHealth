@@ -14,6 +14,7 @@ type Diagnosis struct {
 	Severity     Severity
 	Message      string
 	WhyItMatters string
+	Suggestion   string
 	File         string
 	Line         int
 	CodeSnippet  string

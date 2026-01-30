@@ -1,9 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"goHealth/internal/checks"
 	"goHealth/internal/doctor"
@@ -13,20 +16,24 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: goHealth check <path>")
+	output := flag.String("o", "", "Output file for HTML report")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) < 1 {
+		fmt.Println("Usage: goHealth [-o output.html] check <path>")
 		os.Exit(1)
 	}
 
-	command := os.Args[1]
+	command := args[0]
 	if command != "check" {
 		fmt.Printf("Unknown command: %s\n", command)
 		os.Exit(1)
 	}
 
 	path := "."
-	if len(os.Args) > 2 {
-		path = os.Args[2]
+	if len(args) > 1 {
+		path = args[1]
 	}
 
 	// Ensure path is absolute for clearer reporting
@@ -66,6 +73,8 @@ func main() {
 		&checks.SilencedErrors{},
 		&checks.SliceAppendRace{},
 		&checks.WeakRandomness{},
+		&checks.TimeComparison{},
+		&checks.EmptySpin{},
 		// Add more checks here
 	}
 
@@ -78,5 +87,52 @@ func main() {
 		}
 	}
 
-	report.Render(all)
+	if *output != "" {
+		if err := generateHTMLReport(all, *output); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to generate HTML report: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("HTML report generated: %s\n", *output)
+	} else {
+		report.Render(all)
+	}
+}
+
+func generateHTMLReport(diagnoses []doctor.Diagnosis, outputFile string) error {
+	// Sort by severity
+	sort.Slice(diagnoses, func(i, j int) bool {
+		if diagnoses[i].Severity == doctor.SeverityCritical && diagnoses[j].Severity != doctor.SeverityCritical {
+			return true
+		}
+		return false
+	})
+
+	html := `<html>
+<head>
+<title>Go Health Report</title>
+</head>
+<body>
+<h1>Go Health Inspector Report</h1>
+<p>Found ` + fmt.Sprintf("%d", len(diagnoses)) + ` issues.</p>
+`
+
+	for _, d := range diagnoses {
+		severity := string(d.Severity)
+		html += "<h2>" + severity + ": " + d.Message + "</h2>\n"
+		html += "<p><strong>Location:</strong> " + d.File + ":" + fmt.Sprintf("%d", d.Line) + "</p>\n"
+		if d.CodeSnippet != "" {
+			html += "<p><strong>Code:</strong> " + d.CodeSnippet + "</p>\n"
+		}
+		html += "<p><strong>Why this matters:</strong></p>\n"
+		html += "<p>" + strings.ReplaceAll(d.WhyItMatters, "\n", "<br>") + "</p>\n"
+		if d.Suggestion != "" {
+			html += "<p><strong>Suggestion:</strong></p>\n"
+			html += "<p>" + strings.ReplaceAll(d.Suggestion, "\n", "<br>") + "</p>\n"
+		}
+		html += "<p></p>\n" // padding
+	}
+
+	html += "</body>\n</html>\n"
+
+	return os.WriteFile(outputFile, []byte(html), 0644)
 }

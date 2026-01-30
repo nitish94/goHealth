@@ -33,6 +33,8 @@
 *   **Memory DOS Protection**: Detects `io.ReadAll` without `io.LimitReader` (prevents OOM from large payloads).
 *   **Silenced Critical Errors**: Detects ignoring errors from `json.Marshal`, `db.Exec`, etc. (hides failures).
 *   **Slice Append Races**: Detects appending to slices in goroutines without synchronization (data races).
+*   **Time Comparison Bugs**: Detects `time.Time == time.Time` instead of `.Equal()` (unreliable equality).
+*   **Empty Spin Loops**: Detects CPU-burning `for { select { default: } }` loops (busy-wait).
 
 ## 📦 Installation & Usage
 

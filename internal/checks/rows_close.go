@@ -83,13 +83,12 @@ func (c *RowsClose) Run(pkg *packages.Package) []doctor.Diagnosis {
 
 				if !closed {
 					diagnoses = append(diagnoses, doctor.Diagnosis{
-						Severity: doctor.SeverityCritical,
-						Message:  "Possible unclosed database rows detected.",
-						WhyItMatters: "`sql.Rows` holds a database connection until you call `Close()`. " +
-							"Failing to close it will quickly exhaust your connection pool. " +
-							"Use `defer " + rowsVarName + ".Close()` immediately after checking for errors.",
-						File:        pkg.Fset.Position(assign.Pos()).Filename,
-						Line:        pkg.Fset.Position(assign.Pos()).Line,
+						Severity:     doctor.SeverityCritical,
+						Message:      "Possible unclosed database rows detected.",
+						WhyItMatters: "`sql.Rows` holds a database connection until you call `Close()`. Failing to close it will quickly exhaust your connection pool.",
+						Suggestion:   "Use `defer " + rowsVarName + ".Close()` immediately after checking for errors.",
+						File:         pkg.Fset.Position(assign.Pos()).Filename,
+						Line:         pkg.Fset.Position(assign.Pos()).Line,
 						CodeSnippet: rowsVarName + ", err := db.Query(...) // Missing defer Close()",
 					})
 				}

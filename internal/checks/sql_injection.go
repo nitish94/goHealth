@@ -43,11 +43,12 @@ func (c *SQLInjection) Run(pkg *packages.Package) []doctor.Diagnosis {
 				// Case 1: fmt.Sprintf(...)
 				if isFmtSprintf(arg) {
 					diagnoses = append(diagnoses, doctor.Diagnosis{
-						Severity: doctor.SeverityCritical,
-						Message:  "Potential SQL Injection risk detected.",
-						WhyItMatters: "Building SQL queries using `fmt.Sprintf` allows attackers to inject malicious SQL by crafting input that alters the query structure. Suggestion: Use parameterized queries like db.Query('SELECT * FROM users WHERE id = $1', id) for PostgreSQL or db.Query('SELECT * FROM users WHERE id = ?', id) for MySQL, passing variables as separate arguments to prevent injection.",
-						File:        pkg.Fset.Position(call.Pos()).Filename,
-						Line:        pkg.Fset.Position(call.Pos()).Line,
+						Severity:     doctor.SeverityCritical,
+						Message:      "Potential SQL Injection risk detected.",
+						WhyItMatters: "Building SQL queries using `fmt.Sprintf` allows attackers to inject malicious SQL by crafting input that alters the query structure.",
+						Suggestion:   "Use parameterized queries like db.Query('SELECT * FROM users WHERE id = $1', id) for PostgreSQL or db.Query('SELECT * FROM users WHERE id = ?', id) for MySQL, passing variables as separate arguments to prevent injection.",
+						File:         pkg.Fset.Position(call.Pos()).Filename,
+						Line:         pkg.Fset.Position(call.Pos()).Line,
 						CodeSnippet: "db." + methodName + "(fmt.Sprintf(...))",
 					})
 				}
@@ -55,11 +56,12 @@ func (c *SQLInjection) Run(pkg *packages.Package) []doctor.Diagnosis {
 				// Case 2: "..." + var + "..." (BinaryExpr with String concat)
 				if isStringConcat(arg) {
 					diagnoses = append(diagnoses, doctor.Diagnosis{
-						Severity: doctor.SeverityCritical,
-						Message:  "Potential SQL Injection risk detected (String Concatenation).",
-						WhyItMatters: "Concatenating strings to build SQL queries is unsafe because user input can contain SQL syntax that changes the query's meaning. Suggestion: Replace concatenation with prepared statements, e.g., stmt, err := db.Prepare('SELECT * FROM users WHERE name = ?'); rows, err := stmt.Query(name).",
-						File:        pkg.Fset.Position(call.Pos()).Filename,
-						Line:        pkg.Fset.Position(call.Pos()).Line,
+						Severity:     doctor.SeverityCritical,
+						Message:      "Potential SQL Injection risk detected (String Concatenation).",
+						WhyItMatters: "Concatenating strings to build SQL queries is unsafe because user input can contain SQL syntax that changes the query's meaning.",
+						Suggestion:   "Replace concatenation with prepared statements, e.g., stmt, err := db.Prepare('SELECT * FROM users WHERE name = ?'); rows, err := stmt.Query(name).",
+						File:         pkg.Fset.Position(call.Pos()).Filename,
+						Line:         pkg.Fset.Position(call.Pos()).Line,
 						CodeSnippet: "db." + methodName + "(... + ...)",
 					})
 				}

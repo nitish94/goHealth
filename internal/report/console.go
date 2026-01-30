@@ -38,8 +38,8 @@ func printDiagnosis(d doctor.Diagnosis) {
 	reset := "\033[0m"
 
 	if d.Severity == doctor.SeverityCritical {
-		icon = "🚨"
-		color = "\033[31m" // Red
+		icon = "🚨🚨" // More urgent
+		color = "\033[31;1m" // Bright red bold
 	}
 
 	fmt.Printf("%s %s[%s]%s %s\n", icon, color, d.Severity, reset, d.Message)
@@ -50,5 +50,11 @@ func printDiagnosis(d doctor.Diagnosis) {
 	}
 
 	fmt.Printf("\n   🎓 %sWhy this matters:%s\n", "\033[1m", reset) // Bold
-	fmt.Printf("   %s\n\n", d.WhyItMatters)
+	fmt.Printf("   %s\n", d.WhyItMatters)
+
+	if d.Suggestion != "" {
+		fmt.Printf("\n   💡 %sSuggestion:%s\n", "\033[32m", reset) // Green
+		fmt.Printf("   %s\n", d.Suggestion)
+	}
+	fmt.Println()
 }

@@ -89,12 +89,12 @@ func (c *UnclosedBody) Run(pkg *packages.Package) []doctor.Diagnosis {
 
 				if !closed && !returned {
 					diagnoses = append(diagnoses, doctor.Diagnosis{
-						Severity: doctor.SeverityCritical,
-						Message:  "Possible unclosed HTTP response body detected.",
-						WhyItMatters: "Response bodies must be closed to avoid leaking file descriptors. " +
-							"Use `defer " + respVarName + ".Body.Close()` immediately after checking for errors.",
-						File:        pkg.Fset.Position(assign.Pos()).Filename,
-						Line:        pkg.Fset.Position(assign.Pos()).Line,
+						Severity:     doctor.SeverityCritical,
+						Message:      "Possible unclosed HTTP response body detected.",
+						WhyItMatters: "Response bodies must be closed to avoid leaking file descriptors.",
+						Suggestion:   "Use `defer " + respVarName + ".Body.Close()` immediately after checking for errors.",
+						File:         pkg.Fset.Position(assign.Pos()).Filename,
+						Line:         pkg.Fset.Position(assign.Pos()).Line,
 						CodeSnippet: "resp, err := ... // Missing defer resp.Body.Close()",
 					})
 				}
