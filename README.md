@@ -16,13 +16,17 @@
 #### 1. Concurrency & Performance
 *   **Blocking Sleep**: Detects `time.Sleep` inside loops (blocks the goroutine/thread).
 *   **Context Misuse**: Detects `context.Context` stored in structs (risk of memory leaks/stale contexts).
+*   **HTTP Client Timeouts**: Detects `http.Get`, `http.Post`, or `http.Client{}` without timeouts (causes hangs and crashes).
+*   **Broken Context Chain**: Detects calls with `context.TODO()` or `context.Background()` when a valid context is available (breaks cancellation and tracing).
 
 #### 2. Resource Management
 *   **HTTP Body Leaks**: Detects `http.Response` bodies that aren't closed (file descriptor leaks).
 *   **DB Connection Leaks**: Detects `sql.Rows` that aren't closed (connection pool exhaustion).
+*   **Zombie Transactions**: Detects database transactions started without deferred rollback (locks and connection leaks).
 
 #### 3. Security
 *   **SQL Injection**: Detects `fmt.Sprintf` or string concatenation used to build SQL queries.
+*   **Exit in Libraries**: Detects `os.Exit`, `log.Fatal`, or `panic` calls in non-main packages (prevents graceful error handling).
 
 ## 📦 Installation & Usage
 

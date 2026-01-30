@@ -58,6 +58,10 @@ func main() {
 		&checks.UnclosedBody{},
 		&checks.SQLInjection{},
 		&checks.RowsClose{},
+		&checks.TimebombHttpClient{},
+		&checks.BrokenLinkContext{},
+		&checks.ZombieTransaction{},
+		&checks.ExitInLibrary{},
 		// Add more checks here
 	}
 
