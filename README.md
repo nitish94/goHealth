@@ -1,0 +1,57 @@
+# Go Project Health Inspector 🩺
+
+> "Think of this tool as a doctor, not a compiler. It doesn’t say 'this is invalid Go'. It says 'this will hurt you in production'."
+
+**goHealth** is an opinionated static analysis tool designed to catch **production risks**, **concurrency traps**, and **resource leaks** that standard linters often miss. It prioritizes *behavioral correctness* over style.
+
+## 🚀 Features
+
+### The "Doctor" Philosophy
+*   **Production-Minded**: Focuses on what kills services (blocking loops, leaks, injection).
+*   **Educational**: Doesn't just flag lines; explains *why* the code is dangerous.
+*   **Zero Config**: No flags to disable checks. It's a consultant you hire, not a tool you tweak.
+
+### Checks Implemented
+
+#### 1. Concurrency & Performance
+*   **Blocking Sleep**: Detects `time.Sleep` inside loops (blocks the goroutine/thread).
+*   **Context Misuse**: Detects `context.Context` stored in structs (risk of memory leaks/stale contexts).
+
+#### 2. Resource Management
+*   **HTTP Body Leaks**: Detects `http.Response` bodies that aren't closed (file descriptor leaks).
+*   **DB Connection Leaks**: Detects `sql.Rows` that aren't closed (connection pool exhaustion).
+
+#### 3. Security
+*   **SQL Injection**: Detects `fmt.Sprintf` or string concatenation used to build SQL queries.
+
+## 📦 Installation & Usage
+
+### Inspect a single package
+```bash
+go run main.go check .
+```
+
+### Inspect the entire project (recursive)
+```bash
+go run main.go check ./...
+```
+
+### Example Output
+```text
+🚨 [CRITICAL] Potential SQL Injection risk detected.
+   📍 Location: /path/to/app/db.go:42
+   📝 Code: db.Query(fmt.Sprintf(...))
+
+   🎓 Why this matters:
+   Building SQL queries using fmt.Sprintf allows attackers to inject malicious SQL. Use parameterized queries (e.g., $1, ?) and pass arguments separately to db.Query().
+```
+
+## 🛠 Project Structure
+
+*   `internal/doctor`: Core interface definitions (`Check`, `Diagnosis`).
+*   `internal/checks`: The logic for individual health checks.
+*   `internal/report`: Console output formatting.
+*   `main.go`: CLI entry point.
+
+---
+*Built with ❤️ for better Go services.*
